@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flingster Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #2a2a3a;
+      --accent: #e8462a;
+      --accent-dim: rgba(232,70,42,0.15);
+      --accent-glow: rgba(232,70,42,0.35);
+      --text: #f0ede8;
+      --muted: #6b6880;
+      --success: #2adb8e;
+      --success-dim: rgba(42,219,142,0.12);
+      --warning: #f5a623;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 320px;
+      min-height: 280px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      overflow: hidden;
+    }
+
+    /* Animated noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      padding: 22px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px var(--accent-glow);
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 12px var(--accent-glow); }
+      50% { box-shadow: 0 0 24px var(--accent-glow), 0 0 48px rgba(232,70,42,0.15); }
+    }
+
+    .logo-mark svg { width: 14px; height: 14px; fill: white; }
+
+    .title-group { flex: 1; }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    /* Status pill */
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--muted);
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--surface);
+      transition: all 0.3s;
+    }
+
+    .status-pill.active {
+      color: var(--success);
+      border-color: rgba(42,219,142,0.3);
+      background: var(--success-dim);
+    }
+
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status-pill.active .dot {
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    /* Input group */
+    .input-group { display: flex; flex-direction: column; gap: 7px; }
+
+    label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 38px 10px 12px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.1em;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .toggle-vis {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 2px;
+      display: flex;
+      transition: color 0.2s;
+    }
+
+    .toggle-vis:hover { color: var(--text); }
+
+    /* Remember me */
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .remember input[type="checkbox"] { display: none; }
+
+    .checkbox-ui {
+      width: 14px;
+      height: 14px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .remember input:checked ~ .checkbox-ui {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .checkmark { display: none; }
+    .remember input:checked ~ .checkbox-ui .checkmark {
+      display: block;
+      color: white;
+    }
+
+    .remember span { color: var(--muted); font-size: 11px; }
+
+    /* Submit button */
+    .btn {
+      width: 100%;
+      padding: 11px;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+    }
+
+    .btn:hover:not(:disabled) {
+      background: #f0512f;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn:active:not(:disabled) { transform: translateY(0); }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn.loading .btn-text { opacity: 0; }
+    .btn.loading .spinner { display: block; }
+
+    .spinner {
+      display: none;
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Message area */
+    .message {
+      display: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      line-height: 1.5;
+      animation: slideIn 0.2s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.error {
+      display: flex;
+      gap: 8px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(232,70,42,0.3);
+      color: #f87c6a;
+    }
+
+    .message.success {
+      display: flex;
+      gap: 8px;
+      background: var(--success-dim);
+      border: 1px solid rgba(42,219,142,0.25);
+      color: var(--success);
+    }
+
+    .message svg { flex-shrink: 0; margin-top: 1px; }
+
+    /* Cookie info */
+    .cookie-info {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 10px;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+
+    .cookie-info.visible { display: block; }
+
+    .cookie-info strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .expire-badge {
+      display: inline-block;
+      background: rgba(245,166,35,0.12);
+      color: var(--warning);
+      border: 1px solid rgba(245,166,35,0.25);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 9px;
+    }
+
+    /* Clear button */
+    .btn-ghost {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="title-group">
+      <h1>Member Access</h1>
+      <div class="subtitle">Flingster · Secure Auth</div>
+    </div>
+    <div class="status-pill" id="statusPill">
+      <div class="dot"></div>
+      <span id="statusText">Idle</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Message -->
+  <div class="message" id="message">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <span id="messageText"></span>
+  </div>
+
+  <!-- Cookie info on success -->
+  <div class="cookie-info" id="cookieInfo">
+    <div>Token set on <strong>flingster.com</strong></div>
+    <div>Expires: <span class="expire-badge" id="expireDisplay">—</span></div>
+  </div>
+
+  <!-- Password input -->
+  <div class="input-group" id="inputSection">
+    <label for="passwordInput">Access Password</label>
+    <div class="input-wrap">
+      <input type="password" id="passwordInput" placeholder="Enter your password…" autocomplete="off" spellcheck="false"/>
+      <button class="toggle-vis" id="toggleVis" title="Show/hide password" type="button">
+        <svg id="eyeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+
+    <label class="remember" for="rememberCheck">
+      <input type="checkbox" id="rememberCheck"/>
+      <div class="checkbox-ui">
+        <svg class="checkmark" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <span>Remember password (saved locally)</span>
+    </label>
+  </div>
+
+  <!-- Authenticate button -->
+  <button class="btn" id="authBtn" type="button">
+    <span class="btn-text">Authenticate</span>
+    <div class="spinner"></div>
+  </button>
+
+  <!-- Clear session -->
+  <button class="btn-ghost" id="clearBtn" type="button">Clear Session &amp; Cookie</button>
+
+  <div class="divider"></div>
+
+  <a href="https://slotbooking--imadi0007.replit.app/" target="_blank" class="booking-link">
+    📅 Book your access code
+  </a>
+
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

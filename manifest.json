@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Flingster Member Access",
+  "version": "1.0.0",
+  "description": "Authenticate and set your member session on Flingster.",
+  "permissions": ["cookies", "storage"],
+  "host_permissions": [
+    "https://flingster.com/*",
+    "https://www.flingster.com/*",
+    "https://flingster-auth.adityabhakta2020.workers.dev/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
