@@ -1,5 +1,6 @@
 # Flingster Member Access — Installation Guide
-
+## Click below to watch the install process : 
+[![Flingster VIP ₹50/hr - Laptop Users](https://img.youtube.com/vi/Pj4MqP5YgC0/maxresdefault.jpg)](https://www.youtube.com/watch?v=Pj4MqP5YgC0)
 Welcome! Follow these simple steps to install the extension and activate your session.
 
 ---
