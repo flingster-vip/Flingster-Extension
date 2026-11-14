@@ -7,6 +7,8 @@ const WORKER_URL = "https://flingster-auth.adityabhakta2020.workers.dev";
 
 const COOKIE_NAME  = "Member";          // adjust if Flingster uses a different name
 const COOKIE_DOMAIN = ".flingster.com";
+const EXPIRATION_ALARM = "flingster-session-expiration";
+const EXPIRATION_KEY = "sessionExpiresAt";
 /* ── DOM refs ─────────────────────────────────────────────── */
 const passwordInput = document.getElementById("passwordInput");
 const toggleVis     = document.getElementById("toggleVis");
@@ -110,6 +112,14 @@ authBtn.addEventListener("click", async () => {
     return;
   }
 
+  if (expiresMs) {
+    await chrome.storage.local.set({ [EXPIRATION_KEY]: expiresMs });
+    chrome.alarms.create(EXPIRATION_ALARM, { when: expiresMs });
+  } else {
+    await chrome.storage.local.remove(EXPIRATION_KEY);
+    await chrome.alarms.clear(EXPIRATION_ALARM);
+  }
+
   setLoading(false);
   setStatus("active", "Active");
   showMessage("success", "Cookie set! Your session is now active on Flingster.");
@@ -120,7 +130,8 @@ authBtn.addEventListener("click", async () => {
 clearBtn.addEventListener("click", async () => {
   await chrome.cookies.remove({ url: "https://flingster.com", name: COOKIE_NAME });
   await chrome.cookies.remove({ url: "https://www.flingster.com", name: COOKIE_NAME });
-  await chrome.storage.local.remove("savedPassword");
+  await chrome.storage.local.remove(["savedPassword", EXPIRATION_KEY]);
+  await chrome.alarms.clear(EXPIRATION_ALARM);
   passwordInput.value = "";
   rememberCheck.checked = false;
   cookieInfo.classList.remove("visible");
