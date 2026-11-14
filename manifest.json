@@ -3,7 +3,7 @@
   "name": "Flingster Member Access",
   "version": "1.0.0",
   "description": "Authenticate and set your member session on Flingster.",
-  "permissions": ["cookies", "storage"],
+  "permissions": ["alarms", "cookies", "storage"],
   "host_permissions": [
     "https://flingster.com/*",
     "https://www.flingster.com/*",
@@ -11,5 +11,18 @@
   ],
   "action": {
     "default_popup": "popup.html"
-  }
+  },
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://flingster.com/*",
+        "https://www.flingster.com/*"
+      ],
+      "css": ["flingster.css"],
+      "run_at": "document_start"
+    }
+  ]
 }

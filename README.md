@@ -66,3 +66,4 @@ If you don't have a password yet, book your slot here:
 - Your password is saved locally on your device if you check **Remember password**
 - To log out, click **Clear Session & Cookie** inside the extension
 - The extension only works on **flingster.com**
+- The email and channel-password edit icons are hidden on Flingster, and open Flingster tabs refresh when the session expires
