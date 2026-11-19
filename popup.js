@@ -1,15 +1,9 @@
-/**
- * popup.js — Flingster Member Access Extension
- *
- * ⚠️  REPLACE THIS with your deployed Cloudflare Worker URL:
- */
 const WORKER_URL = "https://flingster-auth.adityabhakta2020.workers.dev";
 
-const COOKIE_NAME  = "Member";          // adjust if Flingster uses a different name
+const COOKIE_NAME  = "Member";
 const COOKIE_DOMAIN = ".flingster.com";
 const EXPIRATION_ALARM = "flingster-session-expiration";
 const EXPIRATION_KEY = "sessionExpiresAt";
-/* ── DOM refs ─────────────────────────────────────────────── */
 const passwordInput = document.getElementById("passwordInput");
 const toggleVis     = document.getElementById("toggleVis");
 const rememberCheck = document.getElementById("rememberCheck");
@@ -22,39 +16,30 @@ const statusText    = document.getElementById("statusText");
 const cookieInfo    = document.getElementById("cookieInfo");
 const expireDisplay = document.getElementById("expireDisplay");
 
-/* ── Init ─────────────────────────────────────────────────── */
 document.addEventListener("DOMContentLoaded", async () => {
-  // Restore saved password if any
   const saved = await getSaved();
   if (saved) {
     passwordInput.value = saved;
     rememberCheck.checked = true;
   }
-
-  // Check if a cookie is already set
   const existing = await getCookie();
   if (existing) {
     setStatus("active", "Active");
     showCookieInfo("(existing)");
   }
-
-  // Focus
   passwordInput.focus();
 });
 
-/* ── Toggle password visibility ───────────────────────────── */
 toggleVis.addEventListener("click", () => {
   const isHidden = passwordInput.type === "password";
   passwordInput.type = isHidden ? "text" : "password";
   toggleVis.querySelector("svg").style.opacity = isHidden ? "0.4" : "1";
 });
 
-/* ── Enter key ────────────────────────────────────────────── */
 passwordInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") authBtn.click();
 });
 
-/* ── Authenticate ─────────────────────────────────────────── */
 authBtn.addEventListener("click", async () => {
   const password = passwordInput.value.trim();
   if (!password) {
@@ -85,15 +70,11 @@ authBtn.addEventListener("click", async () => {
     setLoading(false);
     return;
   }
-
-  // Save password if remember checked
   if (rememberCheck.checked) {
     await chrome.storage.local.set({ savedPassword: password });
   } else {
     await chrome.storage.local.remove("savedPassword");
   }
-
-  // Set cookie
   const expiresMs = parseExpireToMs(data.expire);
   try {
     await chrome.cookies.set({
@@ -126,7 +107,6 @@ authBtn.addEventListener("click", async () => {
   showCookieInfo(data.expire);
 });
 
-/* ── Clear session ────────────────────────────────────────── */
 clearBtn.addEventListener("click", async () => {
   await chrome.cookies.remove({ url: "https://flingster.com", name: COOKIE_NAME });
   await chrome.cookies.remove({ url: "https://www.flingster.com", name: COOKIE_NAME });
@@ -138,8 +118,6 @@ clearBtn.addEventListener("click", async () => {
   setStatus("idle", "Idle");
   showMessage("success", "Session cleared. Cookie removed.");
 });
-
-/* ── Helpers ──────────────────────────────────────────────── */
 
 function setLoading(on) {
   authBtn.disabled = on;
@@ -154,7 +132,6 @@ function setStatus(type, label) {
 function showMessage(type, text) {
   messageEl.className = "message " + type;
   messageText.textContent = text;
-  // scroll into view gently
   messageEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
@@ -181,9 +158,6 @@ async function getCookie() {
   }
 }
 
-/**
- * Parse "DD-MM-YYYY-HH-mm-ss" → milliseconds since epoch
- */
 function parseExpireToMs(str) {
   if (!str) return null;
   const parts = str.split("-");

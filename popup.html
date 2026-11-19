@@ -4,151 +4,123 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Flingster Access</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <meta name="theme-color" content="#101018" />
   <style>
     :root {
-      --bg: #0a0a0f;
-      --surface: #111118;
-      --border: #2a2a3a;
-      --accent: #e8462a;
-      --accent-dim: rgba(232,70,42,0.15);
-      --accent-glow: rgba(232,70,42,0.35);
-      --text: #f0ede8;
-      --muted: #6b6880;
-      --success: #2adb8e;
-      --success-dim: rgba(42,219,142,0.12);
-      --warning: #f5a623;
+      color-scheme: dark;
+      --bg: #101018;
+      --surface: #181822;
+      --surface-raised: #20202c;
+      --border: rgba(255,255,255,.09);
+      --accent: #ff5b67;
+      --accent-bright: #ff786c;
+      --accent-dim: rgba(255,91,103,.12);
+      --accent-glow: rgba(255,91,103,.23);
+      --text: #f8f6f7;
+      --muted: #9693a3;
+      --success: #52dfa2;
+      --success-dim: rgba(82,223,162,.1);
+      --warning: #ffc66d;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
 
     body {
-      width: 320px;
-      min-height: 280px;
+      width: 360px;
+      min-height: 300px;
       background: var(--bg);
       color: var(--text);
-      font-family: 'DM Mono', monospace;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 13px;
-      overflow: hidden;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Animated noise texture overlay */
     body::before {
       content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      opacity: 0.4;
+      position: absolute;
+      top: -130px;
+      right: -100px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,91,103,.15), rgba(255,91,103,0) 70%);
       pointer-events: none;
-      z-index: 0;
     }
 
     .container {
       position: relative;
       z-index: 1;
-      padding: 22px 20px 20px;
+      padding: 22px 22px 20px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px;
     }
 
-    /* Header */
     .header {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
-
-    .logo-mark {
-      width: 32px;
-      height: 32px;
-      background: var(--accent);
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      box-shadow: 0 0 16px var(--accent-glow);
-      animation: pulse-glow 3s ease-in-out infinite;
-    }
-
-    @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 12px var(--accent-glow); }
-      50% { box-shadow: 0 0 24px var(--accent-glow), 0 0 48px rgba(232,70,42,0.15); }
-    }
-
-    .logo-mark svg { width: 14px; height: 14px; fill: white; }
 
     .title-group { flex: 1; }
 
     h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: 17px;
-      font-weight: 800;
-      letter-spacing: -0.3px;
+      font-size: 16px;
+      font-weight: 750;
+      letter-spacing: -.45px;
       line-height: 1;
       color: var(--text);
     }
 
     .subtitle {
       color: var(--muted);
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-top: 3px;
+      font-size: 11px;
+      letter-spacing: .01em;
+      margin-top: 5px;
     }
 
-    /* Status pill */
     .status-pill {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 10px;
+      gap: 7px;
+      font-size: 11px;
       color: var(--muted);
-      padding: 3px 8px;
+      padding: 6px 10px;
       border: 1px solid var(--border);
-      border-radius: 20px;
-      background: var(--surface);
-      transition: all 0.3s;
+      border-radius: 999px;
+      background: rgba(255,255,255,.035);
+      transition: color .2s, background .2s, border-color .2s;
     }
 
     .status-pill.active {
       color: var(--success);
-      border-color: rgba(42,219,142,0.3);
+      border-color: rgba(82,223,162,.24);
       background: var(--success-dim);
     }
 
     .dot {
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: currentColor;
     }
 
-    .status-pill.active .dot {
-      animation: blink 1.5s ease-in-out infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
-    /* Divider */
     .divider {
       height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      background: var(--border);
     }
 
-    /* Input group */
-    .input-group { display: flex; flex-direction: column; gap: 7px; }
+    .intro { display:flex; flex-direction:column; gap:5px; }
+    .intro-title { font-size:14px; font-weight:650; letter-spacing:-.2px; }
+    .intro-copy { color:var(--muted); font-size:11px; line-height:1.5; }
+
+    .input-group { display: flex; flex-direction: column; gap: 9px; }
 
     label {
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      color: #d6d3dd;
     }
 
     .input-wrap {
@@ -161,56 +133,59 @@
       width: 100%;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 38px 10px 12px;
+      border-radius: 11px;
+      padding: 12px 42px 12px 13px;
       color: var(--text);
-      font-family: 'DM Mono', monospace;
+      font: inherit;
       font-size: 13px;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      letter-spacing: 0.1em;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      letter-spacing: .03em;
     }
 
     input:focus {
-      border-color: var(--accent);
+      border-color: rgba(255,120,108,.75);
+      background: #1c1b26;
       box-shadow: 0 0 0 3px var(--accent-dim);
     }
 
+    input::placeholder { color: #777483; letter-spacing: 0; }
+
     .toggle-vis {
       position: absolute;
-      right: 10px;
+      right: 12px;
       background: none;
       border: none;
       cursor: pointer;
       color: var(--muted);
-      padding: 2px;
+      padding: 5px;
+      border-radius: 6px;
       display: flex;
-      transition: color 0.2s;
+      transition: color .2s, background .2s;
     }
 
-    .toggle-vis:hover { color: var(--text); }
+    .toggle-vis:hover { color: var(--text); background: rgba(255,255,255,.06); }
 
-    /* Remember me */
     .remember {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
       cursor: pointer;
       user-select: none;
     }
 
-    .remember input[type="checkbox"] { display: none; }
+    .remember input[type="checkbox"] { position:absolute; opacity:0; width:1px; height:1px; }
 
     .checkbox-ui {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border: 1px solid var(--border);
-      border-radius: 3px;
+      border-radius: 5px;
       background: var(--surface);
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.15s;
+      transition: all .15s;
       flex-shrink: 0;
     }
 
@@ -219,42 +194,37 @@
       border-color: var(--accent);
     }
 
+    .remember input:focus-visible ~ .checkbox-ui { outline:2px solid var(--accent-bright); outline-offset:2px; }
+
     .checkmark { display: none; }
     .remember input:checked ~ .checkbox-ui .checkmark {
       display: block;
       color: white;
     }
 
-    .remember span { color: var(--muted); font-size: 11px; }
+    .remember span { color: var(--muted); font-size: 11px; font-weight: 450; }
 
-    /* Submit button */
     .btn {
       width: 100%;
-      padding: 11px;
-      border-radius: 8px;
+      padding: 12px;
+      border-radius: 11px;
       border: none;
-      background: var(--accent);
+      background: linear-gradient(110deg, #ff706a, #f04b74);
       color: white;
-      font-family: 'Syne', sans-serif;
+      font: inherit;
       font-weight: 700;
       font-size: 13px;
-      letter-spacing: 0.05em;
+      letter-spacing: .01em;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: transform .2s, box-shadow .2s, filter .2s;
       position: relative;
       overflow: hidden;
-    }
-
-    .btn::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+      box-shadow: 0 6px 18px rgba(240,75,116,.2), inset 0 1px rgba(255,255,255,.25);
     }
 
     .btn:hover:not(:disabled) {
-      background: #f0512f;
-      box-shadow: 0 4px 20px var(--accent-glow);
+      filter: brightness(1.06);
+      box-shadow: 0 8px 24px var(--accent-glow), inset 0 1px rgba(255,255,255,.25);
       transform: translateY(-1px);
     }
 
@@ -283,14 +253,13 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Message area */
     .message {
       display: none;
       padding: 10px 12px;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 11px;
       line-height: 1.5;
-      animation: slideIn 0.2s ease;
+      animation: slideIn .2s ease;
     }
 
     @keyframes slideIn {
@@ -302,29 +271,28 @@
       display: flex;
       gap: 8px;
       background: var(--accent-dim);
-      border: 1px solid rgba(232,70,42,0.3);
-      color: #f87c6a;
+      border: 1px solid rgba(255,91,103,.25);
+      color: #ff9295;
     }
 
     .message.success {
       display: flex;
       gap: 8px;
       background: var(--success-dim);
-      border: 1px solid rgba(42,219,142,0.25);
+      border: 1px solid rgba(82,223,162,.22);
       color: var(--success);
     }
 
     .message svg { flex-shrink: 0; margin-top: 1px; }
 
-    /* Cookie info */
     .cookie-info {
       display: none;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 10px 12px;
-      font-size: 10px;
-      line-height: 1.8;
+      font-size: 11px;
+      line-height: 1.9;
       color: var(--muted);
     }
 
@@ -337,43 +305,58 @@
 
     .expire-badge {
       display: inline-block;
-      background: rgba(245,166,35,0.12);
+      background: rgba(255,198,109,.1);
       color: var(--warning);
-      border: 1px solid rgba(245,166,35,0.25);
-      border-radius: 4px;
+      border: 1px solid rgba(255,198,109,.22);
+      border-radius: 6px;
       padding: 1px 6px;
       font-size: 9px;
     }
 
-    /* Clear button */
     .btn-ghost {
       width: 100%;
-      padding: 8px;
-      border-radius: 8px;
+      padding: 9px;
+      border-radius: 10px;
       border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      font-family: 'DM Mono', monospace;
+      background: rgba(255,255,255,.025);
+      color: #b3afbc;
+      font: inherit;
       font-size: 11px;
       cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.05em;
+      transition: all .2s;
     }
 
     .btn-ghost:hover {
-      border-color: var(--accent);
-      color: var(--accent);
+      border-color: rgba(255,255,255,.2);
+      background: rgba(255,255,255,.055);
+      color: var(--text);
+    }
+
+    .booking-link {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding: 2px 0 1px;
+      color: #c1bdcb;
+      font-size:11px;
+      font-weight:550;
+      text-decoration:none;
+      transition:color .2s;
+    }
+    .booking-link:hover { color: var(--accent-bright); }
+    .booking-link svg { width:14px; height:14px; color:var(--accent-bright); }
+
+    button:focus-visible, a:focus-visible { outline:2px solid var(--accent-bright); outline-offset:3px; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; }
     }
   </style>
 </head>
 <body>
 <div class="container">
 
-  <!-- Header -->
   <div class="header">
-    <div class="logo-mark">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    </div>
     <div class="title-group">
       <h1>Member Access</h1>
       <div class="subtitle">Flingster · Secure Auth</div>
@@ -386,7 +369,11 @@
 
   <div class="divider"></div>
 
-  <!-- Message -->
+  <div class="intro">
+    <div class="intro-title">Your private access, made simple</div>
+    <div class="intro-copy">Enter your member password to securely activate your Flingster session.</div>
+  </div>
+
   <div class="message" id="message">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       <circle cx="12" cy="12" r="10"/>
@@ -395,13 +382,11 @@
     <span id="messageText"></span>
   </div>
 
-  <!-- Cookie info on success -->
   <div class="cookie-info" id="cookieInfo">
     <div>Token set on <strong>flingster.com</strong></div>
     <div>Expires: <span class="expire-badge" id="expireDisplay">—</span></div>
   </div>
 
-  <!-- Password input -->
   <div class="input-group" id="inputSection">
     <label for="passwordInput">Access Password</label>
     <div class="input-wrap">
@@ -425,19 +410,18 @@
     </label>
   </div>
 
-  <!-- Authenticate button -->
   <button class="btn" id="authBtn" type="button">
     <span class="btn-text">Authenticate</span>
     <div class="spinner"></div>
   </button>
 
-  <!-- Clear session -->
   <button class="btn-ghost" id="clearBtn" type="button">Clear Session &amp; Cookie</button>
 
   <div class="divider"></div>
 
-  <a href="https://slotbooking--imadi0007.replit.app/" target="_blank" class="booking-link">
-    📅 Book your access code
+  <a href="https://slotbooking--imadi0007.replit.app/" target="_blank" rel="noopener noreferrer" class="booking-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="m9 15 2 2 4-4"/></svg>
+    Book your access code
   </a>
 
 </div>
