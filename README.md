@@ -38,7 +38,7 @@ Welcome! Follow these simple steps to install the extension and activate your se
 ## Need an access code?
 
 If you don't have a password yet, book your slot here:
-👉 **https://slotbooking--imadi0007.replit.app/**
+👉 **https://flingslots.in**
 
 ---
 
