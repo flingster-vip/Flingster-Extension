@@ -1,5 +1,9 @@
 # Flingster Member Access: Quick Install
 
+[![Flingster VIP ₹56/hr - Laptop Users](https://img.youtube.com/vi/Pj4MqP5YgC0/maxresdefault.jpg)](https://www.youtube.com/watch?v=Pj4MqP5YgC0)
+
+▶️ Watch the install process: https://www.youtube.com/watch?v=Pj4MqP5YgC0
+
 ## 1. Download
 - Download the latest `.zip` from the releases page and unzip it.
 
