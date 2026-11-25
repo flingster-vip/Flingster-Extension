@@ -4,6 +4,8 @@ const COOKIE_NAME  = "Member";
 const COOKIE_DOMAIN = ".flingster.com";
 const EXPIRATION_ALARM = "flingster-session-expiration";
 const EXPIRATION_KEY = "sessionExpiresAt";
+const PENDING_START_KEY = "pendingStartAt";
+
 const passwordInput = document.getElementById("passwordInput");
 const toggleVis     = document.getElementById("toggleVis");
 const rememberCheck = document.getElementById("rememberCheck");
@@ -16,6 +18,8 @@ const statusText    = document.getElementById("statusText");
 const cookieInfo    = document.getElementById("cookieInfo");
 const expireDisplay = document.getElementById("expireDisplay");
 
+let countdownTimer = null;
+
 document.addEventListener("DOMContentLoaded", async () => {
   const saved = await getSaved();
   if (saved) {
@@ -27,6 +31,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     setStatus("active", "Active");
     showCookieInfo("(existing)");
   }
+
+  // Resume a countdown if the popup was closed while waiting
+  const stored = await chrome.storage.local.get(PENDING_START_KEY);
+  const pendingStart = stored[PENDING_START_KEY];
+  if (pendingStart && pendingStart > Date.now()) {
+    startCountdown(pendingStart);
+  } else if (pendingStart) {
+    await chrome.storage.local.remove(PENDING_START_KEY);
+  }
+
   passwordInput.focus();
 });
 
@@ -41,6 +55,9 @@ passwordInput.addEventListener("keydown", (e) => {
 });
 
 authBtn.addEventListener("click", async () => {
+  // Block attempts while a countdown is running
+  if (countdownTimer) return;
+
   const password = passwordInput.value.trim();
   if (!password) {
     showMessage("error", "Please enter your password.");
@@ -62,14 +79,36 @@ authBtn.addEventListener("click", async () => {
     data = await res.json();
 
     if (!res.ok || !data.success) {
-      throw new Error(data.error || "Authentication failed");
+      const err = new Error(data.error || "Authentication failed");
+      err.status = res.status;
+      err.start = data.start;
+      throw err;
     }
   } catch (err) {
+    setLoading(false);
+
+    if (err.status === 425) {
+      const startMs = err.start ? Date.parse(err.start) : NaN;
+      if (!isNaN(startMs) && startMs > Date.now()) {
+        await chrome.storage.local.set({ [PENDING_START_KEY]: startMs });
+        startCountdown(startMs);
+        return;
+      }
+      showMessage(
+        "error",
+        "Your access window has started, but the token hasn't been issued yet. Please try again shortly."
+      );
+      setStatus("idle", "Idle");
+      return;
+    }
+
     showMessage("error", err.message || "Network error — check your connection.");
     setStatus("idle", "Idle");
-    setLoading(false);
     return;
   }
+
+  await chrome.storage.local.remove(PENDING_START_KEY);
+
   if (rememberCheck.checked) {
     await chrome.storage.local.set({ savedPassword: password });
   } else {
@@ -110,14 +149,59 @@ authBtn.addEventListener("click", async () => {
 clearBtn.addEventListener("click", async () => {
   await chrome.cookies.remove({ url: "https://flingster.com", name: COOKIE_NAME });
   await chrome.cookies.remove({ url: "https://www.flingster.com", name: COOKIE_NAME });
-  await chrome.storage.local.remove(["savedPassword", EXPIRATION_KEY]);
+  await chrome.storage.local.remove(["savedPassword", EXPIRATION_KEY, PENDING_START_KEY]);
   await chrome.alarms.clear(EXPIRATION_ALARM);
+  stopCountdown();
   passwordInput.value = "";
   rememberCheck.checked = false;
   cookieInfo.classList.remove("visible");
   setStatus("idle", "Idle");
   showMessage("success", "Session cleared. Cookie removed.");
 });
+
+/* ---------- Countdown ---------- */
+
+function startCountdown(startMs) {
+  stopCountdown();
+  authBtn.disabled = true;
+
+  const tick = async () => {
+    const remaining = startMs - Date.now();
+    if (remaining <= 0) {
+      stopCountdown();
+      await chrome.storage.local.remove(PENDING_START_KEY);
+      setStatus("idle", "Idle");
+      showMessage("success", "Access is now open. You can log in.");
+      return;
+    }
+    setStatus("idle", "Waiting…");
+    showMessage("error", "Access not active yet. Starts in " + formatDuration(remaining));
+  };
+
+  tick();
+  countdownTimer = setInterval(tick, 1000);
+}
+
+function stopCountdown() {
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+  authBtn.disabled = false;
+  authBtn.classList.remove("loading");
+}
+
+function formatDuration(ms) {
+  const total = Math.ceil(ms / 1000);
+  const d = Math.floor(total / 86400);
+  const h = Math.floor((total % 86400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+  return (d > 0 ? d + "d " : "") + `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+/* ---------- UI helpers ---------- */
 
 function setLoading(on) {
   authBtn.disabled = on;
